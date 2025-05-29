@@ -36,23 +36,18 @@ namespace Checkers
         // Store references to all board squares
         private Button[,] _boardSquares = new Button[8, 8];
     
-        // Board colors
-        private SolidColorBrush _lightSquareColor;
-        private SolidColorBrush _darkSquareColor;
-    
-        // Highlight colors for valid moves
-        private SolidColorBrush _lightSquareHighlightColor;
-        private SolidColorBrush _darkSquareHighlightColor;
-    
+
         // Game manager
         private GameManager? _gameManager;
 
-        // Public properties for GameManager to access
-        public SolidColorBrush LightSquareColor => _lightSquareColor;
-        public SolidColorBrush DarkSquareColor => _darkSquareColor;
-        public SolidColorBrush LightSquareHighlightColor => _lightSquareHighlightColor;
-        public SolidColorBrush DarkSquareHighlightColor => _darkSquareHighlightColor;
-    
+        public SolidColorBrush LightSquareColor { get; }
+
+        public SolidColorBrush DarkSquareColor { get; }
+
+        public SolidColorBrush LightSquareHighlightColor { get; }
+
+        public SolidColorBrush DarkSquareHighlightColor { get; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow"/> class.
         /// </summary>
@@ -68,20 +63,20 @@ namespace Checkers
             InitializeComponent();
         
             // Get colors from resources
-            _lightSquareColor = (SolidColorBrush)FindResource("LightSquareColor");
-            _darkSquareColor = (SolidColorBrush)FindResource("DarkSquareColor");
+            LightSquareColor = (SolidColorBrush)FindResource("LightSquareColor");
+            DarkSquareColor = (SolidColorBrush)FindResource("DarkSquareColor");
         
             // Create highlight colors (lighter versions of the regular colors)
-            _lightSquareHighlightColor = new SolidColorBrush(Color.FromRgb(
-                (byte)Math.Min(_lightSquareColor.Color.R + 20, 255),
-                (byte)Math.Min(_lightSquareColor.Color.G + 20, 255),
-                (byte)Math.Min(_lightSquareColor.Color.B - 20, 255)
+            LightSquareHighlightColor = new SolidColorBrush(Color.FromRgb(
+                (byte)Math.Min(LightSquareColor.Color.R + 20, 255),
+                (byte)Math.Min(LightSquareColor.Color.G + 20, 255),
+                (byte)Math.Min(LightSquareColor.Color.B - 20, 255)
             ));
         
-            _darkSquareHighlightColor = new SolidColorBrush(Color.FromRgb(
-                (byte)Math.Min(_darkSquareColor.Color.R + 20, 255),
-                (byte)Math.Min(_darkSquareColor.Color.G + 20, 255),
-                (byte)Math.Min(_darkSquareColor.Color.B - 20, 255)
+            DarkSquareHighlightColor = new SolidColorBrush(Color.FromRgb(
+                (byte)Math.Min(DarkSquareColor.Color.R + 20, 255),
+                (byte)Math.Min(DarkSquareColor.Color.G + 20, 255),
+                (byte)Math.Min(DarkSquareColor.Color.B - 20, 255)
             ));
         
             // Create the checkers board squares
@@ -95,7 +90,7 @@ namespace Checkers
 
                 if (checkersBoard != null) 
                 {
-                    _gameManager = new GameManager(this, checkersBoard, _boardSquares);
+                    _gameManager = new GameManager(this, _boardSquares);
                 }
                 else 
                 {
@@ -114,10 +109,6 @@ namespace Checkers
         /// <summary>
         /// Initializes the checkerboard by creating and styling the squares, and adding them to the grid.
         /// </summary>
-        /// <remarks>This method dynamically generates an 8x8 grid of buttons to represent the
-        /// checkerboard. Each square is styled based on its position to alternate between light and dark colors, and
-        /// its position is stored in the <see cref="Tag"/> property of the button. The method requires a grid named
-        /// "CheckersBoard" to be defined in the XAML file.</remarks>
         private void InitializeCheckerBoard()
         {
             // Make sure we have a reference to the grid named CheckersBoard from XAML
@@ -137,7 +128,7 @@ namespace Checkers
                     var square = new Button
                     {
                         Style = (Style)FindResource("CheckersSquareStyle"),
-                        Background = (row + col) % 2 == 0 ? _lightSquareColor : _darkSquareColor,
+                        Background = (row + col) % 2 == 0 ? LightSquareColor : DarkSquareColor,
                         Tag = new Point(row, col) // Store the position for later use
                     };
 
@@ -251,8 +242,10 @@ namespace Checkers
         /// selection,  the method initiates a new game using the selected game mode.</remarks>
         private void ShowGameModeDialog()
         {
-            var dialog = new GameModeDialog();
-            dialog.Owner = this;
+            var dialog = new GameModeDialog()
+            {
+                Owner = this
+            };
         
             bool? result = dialog.ShowDialog();
         
