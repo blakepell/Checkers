@@ -28,7 +28,6 @@ namespace Checkers.Managers
     public class GameManager
     {
         private readonly MainWindow _mainWindow;
-        private readonly Grid _board;
         private readonly Button[,]? _boardSquares;
         private Player _currentPlayer;
         private CheckersPiece? _selectedPiece;
@@ -44,9 +43,7 @@ namespace Checkers.Managers
         // Last move accenting
         private Point? _lastMoveTarget;
         private readonly Brush _lastMoveAccentBrush = Brushes.Gold;
-        private readonly Thickness _lastMoveAccentThickness = new Thickness(3);
-
-        public bool SoundsEnabled { get => _soundsEnabled; set => _soundsEnabled = value; }
+        private readonly Thickness _lastMoveAccentThickness = new(3);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GameManager"/> class, setting up the game board, UI elements,
@@ -57,13 +54,11 @@ namespace Checkers.Managers
         /// actions, such as moves, jumps, and game over events. The sound files are expected to be located in the
         /// "Assets/Audio"  directory relative to the application's base directory.</remarks>
         /// <param name="mainWindow">The main application window that hosts the game interface.</param>
-        /// <param name="board">The <see cref="Grid"/> control representing the game board in the UI.</param>
         /// <param name="boardSquares">A two-dimensional array of <see cref="Button"/> controls representing the individual squares on the game
         /// board.</param>
-        public GameManager(MainWindow mainWindow, Grid board, Button[,] boardSquares)
+        public GameManager(MainWindow mainWindow, Button[,] boardSquares)
         {
             _mainWindow = mainWindow;
-            _board = board;
             _boardSquares = boardSquares;
             _pieces = new CheckersPiece[8, 8];
             _validMoves = new List<Point>();
@@ -72,10 +67,6 @@ namespace Checkers.Managers
             // Initialize with no game in progress
             _gameInProgress = false;
             _gameMode = GameMode.TwoPlayer; // Default to two-player mode
-
-            // Initialize sound players
-            string basePath = AppDomain.CurrentDomain.BaseDirectory;
-            _soundsEnabled = true;
         }
         
         /// <summary>
@@ -402,7 +393,7 @@ namespace Checkers.Managers
             int targetCol = (int)position.Y;
 
             // Check if this is a valid move and if _validMoves is initialized
-            if (_validMoves == null || !IsValidMove(_selectedPiece, targetRow, targetCol))
+            if (_validMoves == null || !IsValidMove(targetRow, targetCol))
             {
                 return;
             }
@@ -455,7 +446,7 @@ namespace Checkers.Managers
                 int targetCol = (int)position.Y;
 
                 // Highlight the square if it's a valid move
-                if (IsValidMove(_selectedPiece, targetRow, targetCol))
+                if (IsValidMove(targetRow, targetCol))
                 {
                     square.Opacity = 0.7;
                 }
@@ -508,7 +499,7 @@ namespace Checkers.Managers
             int targetCol = (int)position.Y;
 
             // Validate move
-            if (_validMoves == null || !IsValidMove(_selectedPiece, targetRow, targetCol))
+            if (_validMoves == null || !IsValidMove(targetRow, targetCol))
             {
                 return;
             }
@@ -563,7 +554,7 @@ namespace Checkers.Managers
                 bool isKing = piece.IsKing;
 
                 // Direction of movement depends on player (unless it's a king)
-                int[] rowDirections = isKing ? new[] { -1, 1 } : player == Player.Red ? new[] { -1 } : new[] { 1 };
+                int[] rowDirections = isKing ? [-1, 1] : player == Player.Red ? new[] { -1 } : new[] { 1 };
 
                 foreach (int rowDir in rowDirections)
                 {
@@ -610,18 +601,17 @@ namespace Checkers.Managers
 
             return moves;
         }
-        
+
         /// <summary>
         /// Determines whether the specified move for a given checkers piece is valid.
         /// </summary>
         /// <remarks>A move is considered valid if it matches one of the precomputed valid moves stored in
         /// the internal state.</remarks>
-        /// <param name="piece">The checkers piece for which the move is being validated.</param>
         /// <param name="targetRow">The target row of the move.</param>
         /// <param name="targetCol">The target column of the move.</param>
         /// <returns><see langword="true"/> if the move to the specified row and column is valid for the given piece; otherwise,
         /// <see langword="false"/>.</returns>
-        private bool IsValidMove(CheckersPiece piece, int targetRow, int targetCol)
+        private bool IsValidMove(int targetRow, int targetCol)
         {
             if (_validMoves == null)
             {
@@ -920,7 +910,7 @@ namespace Checkers.Managers
             bool isKing = piece.IsKing;
 
             // Direction of movement depends on player (unless it's a king)
-            int[] rowDirections = isKing ? new[] { -1, 1 } : player == Player.Red ? new[] { -1 } : new[] { 1 };
+            int[] rowDirections = isKing ? [-1, 1] : player == Player.Red ? new[] { -1 } : new[] { 1 };
 
             foreach (int rowDir in rowDirections)
             {

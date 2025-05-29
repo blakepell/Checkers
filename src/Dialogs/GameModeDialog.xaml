@@ -41,13 +41,11 @@
             HorizontalAlignment="Right"
             Orientation="Horizontal">
             <Button
-                x:Name="StartButton"
                 Width="80"
                 Height="30"
                 Click="StartButton_Click"
                 Content="Start Game" />
             <Button
-                x:Name="CancelButton"
                 Width="80"
                 Height="30"
                 Margin="10,0,0,0"

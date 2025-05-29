@@ -82,8 +82,6 @@ namespace Checkers.Managers
                 case SoundEffect.GameOver:
                     GameOverSound.Play();
                     break;
-                default:
-                    break;
             }
         }
     }
