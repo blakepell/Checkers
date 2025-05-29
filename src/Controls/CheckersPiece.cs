@@ -12,6 +12,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using System.Windows.Shapes;
 
 namespace Checkers.Controls
@@ -168,33 +169,27 @@ namespace Checkers.Controls
         {
             try
             {
-                // Update the ellipse color based on player
+                // Update the ellipse appearance with a radial gradient and drop shadow for depth
+                var gradientBrush = new RadialGradientBrush
+                {
+                    GradientOrigin = new Point(0.3, 0.3),
+                    Center = new Point(0.5, 0.5),
+                    RadiusX = 0.5,
+                    RadiusY = 0.5
+                };
                 if (Player == Player.Red)
                 {
-                    try
-                    {
-                        _pieceEllipse.Fill = (SolidColorBrush)FindResource("RedPieceColor");
-                    }
-                    catch
-                    {
-                        // Fallback if resource not found
-                        _pieceEllipse.Fill = new SolidColorBrush(Colors.DarkRed);
-                    }
+                    gradientBrush.GradientStops.Add(new GradientStop(Colors.Red, 0));
+                    gradientBrush.GradientStops.Add(new GradientStop(Colors.DarkRed, 1));
                 }
                 else
                 {
-                    try
-                    {
-                        _pieceEllipse.Fill = (SolidColorBrush)FindResource("BlackPieceColor");
-                    }
-                    catch
-                    {
-                        // Fallback if resource not found
-                        _pieceEllipse.Fill = new SolidColorBrush(Colors.Black);
-                    }
+                    gradientBrush.GradientStops.Add(new GradientStop(Colors.Gray, 0));
+                    gradientBrush.GradientStops.Add(new GradientStop(Colors.Black, 1));
                 }
-
+                _pieceEllipse.Fill = gradientBrush;
                 _pieceEllipse.Stroke = Brushes.White;
+                _pieceEllipse.Effect = new DropShadowEffect { Color = Colors.Black, Direction = 270, ShadowDepth = 2, BlurRadius = 4, Opacity = 0.5 };
 
                 // Show/hide crown based on king status
                 _crownPath.Visibility = IsKing ? Visibility.Visible : Visibility.Collapsed;
