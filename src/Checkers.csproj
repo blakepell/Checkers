@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <PackageReference Include="Argus.Core" Version="2025.5.18.1" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
   </ItemGroup>
 
   <ItemGroup>
