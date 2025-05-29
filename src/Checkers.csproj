@@ -27,6 +27,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Argus.Core" Version="2025.5.18.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Assets\Audio\ComputerJump.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
