@@ -1,3 +1,14 @@
+/*
+ * Checkers
+ *
+ * @project lead      : Blake Pell
+ * @company           : ApexGate
+ * @website           : https://www.apexgate.net
+ * @website           : https://www.blakepell.com
+ * @copyright         : Copyright (c), 2025 All rights reserved.
+ * @license           : MIT
+ */
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,9 +17,18 @@ using System.Windows.Controls;
 using System.IO;
 using System.Media;
 using System.Windows.Media;
+using Checkers.Controls;
 
 namespace Checkers
 {
+    /// <summary>
+    /// Manages the state and logic of a checkers game, including player turns, piece movements,  game rules, and
+    /// interactions with the game board UI.
+    /// </summary>
+    /// <remarks>The <see cref="GameManager"/> class handles the core functionality of a checkers game,  such
+    /// as initializing the board, managing player turns, validating moves, and determining  game outcomes. It supports
+    /// both single-player (with AI) and two-player modes. The class  interacts with the UI elements of the game board
+    /// to reflect the current state of the game.</remarks>
     public class GameManager
     {
         private readonly MainWindow _mainWindow;
@@ -37,6 +57,18 @@ namespace Checkers
 
         public bool SoundsEnabled { get => _soundsEnabled; set => _soundsEnabled = value; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GameManager"/> class, setting up the game board, UI elements,
+        /// and sound effects for a game of checkers.
+        /// </summary>
+        /// <remarks>This constructor initializes the game manager with default settings, including no
+        /// game in progress and a default game mode of two-player. It also sets up sound effects for various game
+        /// actions, such as moves, jumps, and game over events. The sound files are expected to be located in the
+        /// "Assets/Audio"  directory relative to the application's base directory.</remarks>
+        /// <param name="mainWindow">The main application window that hosts the game interface.</param>
+        /// <param name="board">The <see cref="Grid"/> control representing the game board in the UI.</param>
+        /// <param name="boardSquares">A two-dimensional array of <see cref="Button"/> controls representing the individual squares on the game
+        /// board.</param>
         public GameManager(MainWindow mainWindow, Grid board, Button[,] boardSquares)
         {
             _mainWindow = mainWindow;
@@ -59,6 +91,14 @@ namespace Checkers
             _gameOverSound = new SoundPlayer(Path.Combine(basePath, "Assets", "Audio", "GameOver.wav"));
             _soundsEnabled = true;
         }
+        
+        /// <summary>
+        /// Initializes a new game with the specified game mode.
+        /// </summary>
+        /// <remarks>This method resets the game state, clears the board, and sets up the initial piece
+        /// positions. It also ensures that the game is ready for play by initializing necessary variables and updating
+        /// the game window.</remarks>
+        /// <param name="gameMode">The mode of the game to be started, determining the rules and behavior of the game.</param>
         public void NewGame(GameMode gameMode)
         {
             try
@@ -99,6 +139,12 @@ namespace Checkers
             }
         }
 
+        /// <summary>
+        /// Initializes the game board by placing the initial pieces for both players.
+        /// </summary>
+        /// <remarks>Black pieces are placed on the top three rows of the board (rows 0-2),  and Red
+        /// pieces are placed on the bottom three rows (rows 5-7). Pieces are  only placed on dark squares, which are
+        /// determined by the condition  <c>(row + col) % 2 == 1</c>.</remarks>
         private void SetupInitialBoard()
         {
             // Place Black pieces (top of board, rows 0-2)
@@ -127,6 +173,17 @@ namespace Checkers
                 }
             }
         }
+
+        /// <summary>
+        /// Adds a new checkers piece to the game board at the specified position.
+        /// </summary>
+        /// <remarks>This method validates the specified position and adds the piece to the internal data
+        /// structure and the UI representation of the board. If the position is invalid or the board is not
+        /// initialized, the method exits without making changes.</remarks>
+        /// <param name="row">The row index of the board where the piece will be placed. Must be within the valid range of the board.</param>
+        /// <param name="col">The column index of the board where the piece will be placed. Must be within the valid range of the board.</param>
+        /// <param name="player">The player to whom the piece belongs.</param>
+        /// <param name="isKing">A value indicating whether the piece is a king. Defaults to <see langword="false"/>.</param>
         private void AddPiece(int row, int col, Player player, bool isKing = false)
         {
             try
@@ -179,6 +236,14 @@ namespace Checkers
                 System.Diagnostics.Debug.WriteLine($"Error adding piece at {row},{col}: {ex.Message}");
             }
         }
+        
+        /// <summary>
+        /// Clears the game board by removing all pieces, resetting board squares, and detaching event handlers.
+        /// </summary>
+        /// <remarks>This method ensures that all event handlers associated with the board squares and
+        /// pieces are removed to prevent memory leaks. It also resets the internal state of the board and pieces to
+        /// their initial state. If the board is not initialized, the method exits without performing any
+        /// actions.</remarks>
         private void ClearBoard()
         {
             if (_boardSquares == null)
@@ -243,6 +308,13 @@ namespace Checkers
             }
         }
 
+        /// <summary>
+        /// Resets the state of all board squares, re-enabling drag-and-drop functionality and reattaching necessary
+        /// event handlers.
+        /// </summary>
+        /// <remarks>This method ensures that all squares in the board are properly configured for
+        /// interaction by enabling drop functionality and attaching or reattaching event handlers for drag-and-drop and
+        /// click events. If the board squares are not initialized, the method exits without making changes.</remarks>
         private void ResetBoardSquares()
         {
             if (_boardSquares == null)
@@ -276,6 +348,17 @@ namespace Checkers
             }
         }
 
+        /// <summary>
+        /// Handles the <see cref="UIElement.MouseDown"/> event for a checkers piece.
+        /// </summary>
+        /// <remarks>This method is invoked when a checkers piece is clicked during the game. It performs
+        /// the following actions: <list type="bullet"> <item> <description>Ignores the click if the game is not in
+        /// progress.</description> </item> <item> <description>Restricts selection to the currently jumping piece if
+        /// the game is in multi-jump mode.</description> </item> <item> <description>Ensures that only the current
+        /// player's pieces can be selected during their turn.</description> </item> <item> <description>Highlights
+        /// valid moves for the selected piece.</description> </item> </list></remarks>
+        /// <param name="sender">The checkers piece that was clicked.</param>
+        /// <param name="e">The event data associated with the mouse down action.</param>
         private void Piece_MouseDown(object sender, RoutedEventArgs e)
         {
             // If game is not in progress, do nothing
@@ -362,6 +445,14 @@ namespace Checkers
             }
             // Otherwise, we're in multi-jump mode and MovePiece has already set up the next move
         }
+
+        /// <summary>
+        /// Handles the <see cref="DragEventArgs"/> when a drag operation enters a square.
+        /// </summary>
+        /// <remarks>This method checks if the dragged piece can be moved to the target square. If the
+        /// move is valid,  the square's appearance is updated to indicate its eligibility as a drop target.</remarks>
+        /// <param name="sender">The source of the event, typically a <see cref="Button"/> representing a square.</param>
+        /// <param name="e">The event data containing information about the drag operation.</param>
         private void Square_DragEnter(object sender, DragEventArgs e)
         {
             if (_selectedPiece != null)
@@ -385,6 +476,13 @@ namespace Checkers
             }
         }
 
+        /// <summary>
+        /// Handles the <see cref="UIElement.DragLeave"/> event for a square button.
+        /// </summary>
+        /// <remarks>This method resets the opacity of the button to its default value when a drag
+        /// operation leaves the button's bounds.</remarks>
+        /// <param name="sender">The source of the event, expected to be a <see cref="Button"/>.</param>
+        /// <param name="e">The event data associated with the drag leave operation.</param>
         private void Square_DragLeave(object sender, DragEventArgs e)
         {
             // Reset opacity
@@ -394,7 +492,16 @@ namespace Checkers
             }
         }
 
-        // Handler for click-to-move
+        /// <summary>
+        /// Handles the click event for a game board square, allowing a selected piece to move to the clicked square if
+        /// the move is valid.
+        /// </summary>
+        /// <remarks>This method validates the move based on the current game state, including whether the
+        /// game is in progress, whether a piece is selected, and whether the move adheres to the game's rules. If the
+        /// move is valid, the piece is moved to the target square, and the game state is updated accordingly.
+        /// Multi-jump constraints and game-end conditions are also handled.</remarks>
+        /// <param name="sender">The button representing the clicked square.</param>
+        /// <param name="e">The event data associated with the click event.</param>
         private void Square_Click(object sender, RoutedEventArgs e)
         {
             // If game not in progress or no piece selected, do nothing
@@ -404,6 +511,7 @@ namespace Checkers
             }
 
             var square = sender as Button;
+
             if (square?.Tag == null)
             {
                 return;
@@ -439,6 +547,18 @@ namespace Checkers
             e.Handled = true;
         }
 
+        /// <summary>
+        /// Determines the valid moves for a given checkers piece based on the current game state.
+        /// </summary>
+        /// <remarks>This method calculates both standard moves (one square diagonally) and jump moves
+        /// (capturing an opponent's piece).  Jump moves take precedence over standard moves, and if any jump moves are
+        /// available, they must be performed.  If the game is in a multi-jump state, only moves for the piece currently
+        /// performing the multi-jump are considered.</remarks>
+        /// <param name="piece">The checkers piece for which to calculate valid moves. This parameter can be null, in which case an empty
+        /// list is returned.</param>
+        /// <returns>A list of <see cref="Point"/> objects representing the valid moves for the specified piece.  If the piece
+        /// can perform a jump move, only jump moves are returned as they are mandatory.  If the piece is in a
+        /// multi-jump sequence and no further jumps are available, an empty list is returned.</returns>
         private List<Point> GetValidMoves(CheckersPiece? piece)
         {
             var moves = new List<Point>();
@@ -504,6 +624,17 @@ namespace Checkers
 
             return moves;
         }
+        
+        /// <summary>
+        /// Determines whether the specified move for a given checkers piece is valid.
+        /// </summary>
+        /// <remarks>A move is considered valid if it matches one of the precomputed valid moves stored in
+        /// the internal state.</remarks>
+        /// <param name="piece">The checkers piece for which the move is being validated.</param>
+        /// <param name="targetRow">The target row of the move.</param>
+        /// <param name="targetCol">The target column of the move.</param>
+        /// <returns><see langword="true"/> if the move to the specified row and column is valid for the given piece; otherwise,
+        /// <see langword="false"/>.</returns>
         private bool IsValidMove(CheckersPiece piece, int targetRow, int targetCol)
         {
             if (_validMoves == null)
@@ -521,7 +652,18 @@ namespace Checkers
 
             return false;
         }
-        private void MovePiece(CheckersPiece piece, int targetRow, int targetCol)
+
+        /// <summary>
+        /// Moves a checkers piece to the specified target position on the board.
+        /// </summary>
+        /// <remarks>This method handles all aspects of moving a piece, including capturing opponent
+        /// pieces, promoting to king, updating the game state, and switching turns. If the move is a jump, it checks
+        /// for additional jumps and enables multi-jump mode if applicable. In single-player mode, the AI's turn is
+        /// triggered after the player's move.</remarks>
+        /// <param name="piece">The <see cref="CheckersPiece"/> to move. Cannot be <see langword="null"/>.</param>
+        /// <param name="targetRow">The target row index on the board. Must be within the valid board range.</param>
+        /// <param name="targetCol">The target column index on the board. Must be within the valid board range.</param>
+        private void MovePiece(CheckersPiece? piece, int targetRow, int targetCol)
         {
             try
             {
@@ -651,6 +793,13 @@ namespace Checkers
             }
         }
 
+        /// <summary>
+        /// Removes a piece from the specified position on the board.
+        /// </summary>
+        /// <remarks>If the specified position is invalid or there is no piece at the given position, the
+        /// method performs no action.</remarks>
+        /// <param name="row">The row index of the position from which to remove the piece. Must be a valid board position.</param>
+        /// <param name="col">The column index of the position from which to remove the piece. Must be a valid board position.</param>
         private void RemovePiece(int row, int col)
         {
             if (_boardSquares == null || _pieces == null)
@@ -670,7 +819,15 @@ namespace Checkers
             _pieces[row, col] = null;
         }
 
-        private bool ShouldPromoteToKing(CheckersPiece piece, int row)
+        /// <summary>
+        /// Determines whether the specified piece should be promoted to a king based on its position.
+        /// </summary>
+        /// <param name="piece">The checkers piece to evaluate. Must not be null.</param>
+        /// <param name="row">The row index of the piece's current position, where 0 is the top row and 7 is the bottom row.</param>
+        /// <returns><see langword="true"/> if the piece should be promoted to a king; otherwise, <see langword="false"/>. A
+        /// piece is promoted to a king if it is not already a king and reaches the opponent's back row (row 0 for red
+        /// pieces, row 7 for black pieces).</returns>
+        private bool ShouldPromoteToKing(CheckersPiece? piece, int row)
         {
             // Prevent re-promoting an already-king piece
             if (piece.IsKing)
@@ -693,6 +850,13 @@ namespace Checkers
             return false;
         }
 
+        /// <summary>
+        /// Highlights the valid moves on the game board by visually indicating the specified positions.
+        /// </summary>
+        /// <remarks>Each valid move is highlighted by changing the background color of the corresponding
+        /// board square. The highlight color alternates based on the square's position to maintain the board's visual
+        /// pattern. If the board is not initialized, the method exits without performing any action.</remarks>
+        /// <param name="moves">A list of <see cref="Point"/> objects representing the valid move positions to highlight.</param>
         private void HighlightValidMoves(List<Point> moves)
         {
             if (_boardSquares == null)
@@ -716,6 +880,12 @@ namespace Checkers
             }
         }
 
+        /// <summary>
+        /// Clears all visual highlights from the chessboard squares, restoring their original colors and opacity.
+        /// </summary>
+        /// <remarks>This method resets the background color and opacity of each square on the chessboard
+        /// to its default state. It assumes an 8x8 board layout and alternates colors based on the square's position.
+        /// If the board squares are not initialized, the method exits without performing any actions.</remarks>
         private void ClearHighlights()
         {
             if (_boardSquares == null)
@@ -737,12 +907,19 @@ namespace Checkers
             }
         }
 
+        /// <summary>
+        /// Determines whether the specified position is within the bounds of an 8x8 grid.
+        /// </summary>
+        /// <param name="row">The row index to validate. Must be a non-negative integer less than 8.</param>
+        /// <param name="col">The column index to validate. Must be a non-negative integer less than 8.</param>
+        /// <returns><see langword="true"/> if the specified position is within the bounds of the grid;  otherwise, <see
+        /// langword="false"/>.</returns>
         private bool IsValidPosition(int row, int col)
         {
-            return row >= 0 && row < 8 && col >= 0 && col < 8;
+            return row is >= 0 and < 8 && col is >= 0 and < 8;
         }
 
-        private List<Point> GetJumpsFromPosition(CheckersPiece piece)
+        private List<Point> GetJumpsFromPosition(CheckersPiece? piece)
         {
             var jumps = new List<Point>();
 
@@ -753,7 +930,7 @@ namespace Checkers
 
             int row = piece.Row;
             int col = piece.Column;
-            Player player = piece.Player;
+            var player = piece.Player;
             bool isKing = piece.IsKing;
 
             // Direction of movement depends on player (unless it's a king)
@@ -780,6 +957,17 @@ namespace Checkers
 
             return jumps;
         }
+
+        /// <summary>
+        /// Determines whether the game has ended based on the current state of the board and game rules.
+        /// </summary>
+        /// <remarks>This method checks for various game-ending conditions, including: <list
+        /// type="bullet"> <item><description>Whether the game is in multi-jump mode, in which case the check is
+        /// deferred.</description></item> <item><description>The "only two kings left" draw
+        /// condition.</description></item> <item><description>Whether either player has no playable pieces or valid
+        /// moves remaining.</description></item> </list> If a game-ending condition is met, the appropriate action is
+        /// taken, such as ending the game in a draw or declaring a winner. Any exceptions encountered during the check
+        /// are logged but do not interrupt execution.</remarks>
         private void CheckForGameEnd()
         {
             try
@@ -847,6 +1035,12 @@ namespace Checkers
             }
         }
 
+        /// <summary>
+        /// Ends the current game and declares the specified player as the winner.
+        /// </summary>
+        /// <remarks>This method stops the game, plays a game-over sound, triggers a confetti animation, 
+        /// and displays a message box announcing the winner.</remarks>
+        /// <param name="winner">The player who won the game. Cannot be null.</param>
         private void EndGame(Player winner)
         {
             _gameInProgress = false;
@@ -857,6 +1051,15 @@ namespace Checkers
             // Show game over message
             MessageBox.Show($"Game Over! {winner} wins!");
         }
+
+        /// <summary>
+        /// Determines whether the current game state is a draw due to only two kings remaining on the board.
+        /// </summary>
+        /// <remarks>This method checks if the board contains exactly one red king and one black king,
+        /// with no other pieces. If more than two pieces are found, the method returns <see
+        /// langword="false"/>.</remarks>
+        /// <returns><see langword="true"/> if the board contains exactly one red king and one black king; otherwise, <see
+        /// langword="false"/>.</returns>
         private bool CheckForTwoKingsDrawCondition()
         {
             // It's a draw if there is exactly one red king and one black king left
@@ -902,6 +1105,12 @@ namespace Checkers
             // It's a draw if there is exactly one red king and one black king
             return (redKings == 1) && (blackKings == 1);
         }
+
+        /// <summary>
+        /// Ends the game and declares a draw when only one red king and one black king remain.
+        /// </summary>
+        /// <remarks>This method stops the game, displays a message indicating the draw, and optionally
+        /// plays a game-over sound if sounds are enabled.</remarks>
         private void EndGameInDraw()
         {
             _gameInProgress = false;
@@ -935,7 +1144,13 @@ namespace Checkers
             EndGame(winner);
         }
 
-        // AI methods for single player mode
+        /// <summary>
+        /// Executes the AI's move in a single-player game when it is the AI's turn.
+        /// </summary>
+        /// <remarks>This method is invoked to make the AI perform a move during a single-player game.  It
+        /// prioritizes capturing moves (jumps) and moves that promote a piece to a king.  If no valid moves are
+        /// available, the AI forfeits its turn. The method also handles  multi-jump scenarios by recursively calling
+        /// itself until no further jumps are possible.</remarks>
         private void MakeAIMove()
         {
             try
@@ -949,8 +1164,8 @@ namespace Checkers
                 System.Threading.Thread.Sleep(500);
 
                 // Get all AI pieces with valid moves
-                var aiPieces = new List<CheckersPiece>();
-                var allJumpPieces = new List<CheckersPiece>();
+                var aiPieces = new List<CheckersPiece?>();
+                var allJumpPieces = new List<CheckersPiece?>();
 
                 for (int row = 0; row < 8; row++)
                 {
@@ -1025,7 +1240,20 @@ namespace Checkers
                 System.Diagnostics.Debug.WriteLine($"Error in AI move: {ex.Message}");
             }
         }
-        private Point SelectBestMove(CheckersPiece aiPiece, List<Point> validMoves)
+
+        /// <summary>
+        /// Selects the best move for the AI-controlled checkers piece from a list of valid moves.
+        /// </summary>
+        /// <remarks>The method prioritizes moves in the following order: 1. Jumps (capturing moves), with
+        /// preference for jumps that promote the piece to a king. 2. Moves that promote the piece to a king. 3. Moves
+        /// that avoid immediate capture by the opponent. 4. A random valid move if no other criteria are met.</remarks>
+        /// <param name="aiPiece">The AI-controlled checkers piece for which the move is being selected. Cannot be null.</param>
+        /// <param name="validMoves">A list of valid moves available to the AI piece. Must not be null or empty.</param>
+        /// <returns>The <see cref="Point"/> representing the selected move. The move is chosen based on a prioritized strategy:
+        /// jumps (capturing moves) are preferred, followed by moves that promote the piece to a king,  then moves that
+        /// avoid immediate capture, and finally a random valid move if no other criteria are met.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if <paramref name="validMoves"/> is null or contains no elements.</exception>
+        private Point SelectBestMove(CheckersPiece? aiPiece, List<Point> validMoves)
         {
             if (validMoves == null || validMoves.Count == 0)
             {
@@ -1120,7 +1348,12 @@ namespace Checkers
             return validMoves[_random.Next(validMoves.Count)];
         }
 
-        // Helper to update the window title based on current player
+        /// <summary>
+        /// Updates the main window's title to reflect the current player's turn and game mode.
+        /// </summary>
+        /// <remarks>The title indicates whether it is Player 1's turn, Player 2's turn, or the computer's
+        /// turn, depending on the current player and game mode. This method ensures the title update is performed on
+        /// the UI thread.</remarks>
         private void UpdateTitle()
         {
             string title;
@@ -1137,6 +1370,12 @@ namespace Checkers
             _mainWindow.Dispatcher.Invoke(() => _mainWindow.Title = title);
         }
 
+        /// <summary>
+        /// Clears the visual accent applied to the last move on the game board, if any.
+        /// </summary>
+        /// <remarks>This method removes the border styling from the square that was previously
+        /// highlighted as the target of the last move. If no move has been highlighted or the board is uninitialized,
+        /// the method performs no action.</remarks>
         private void ClearLastMoveAccent()
         {
             if (_boardSquares == null)
@@ -1155,6 +1394,13 @@ namespace Checkers
             }
         }
 
+        /// <summary>
+        /// Highlights the last move on the game board by applying a visual accent to the specified square.
+        /// </summary>
+        /// <remarks>This method updates the border appearance of the specified square to indicate the
+        /// last move. If the board is not initialized, the method exits without making any changes.</remarks>
+        /// <param name="row">The zero-based row index of the square to accent.</param>
+        /// <param name="col">The zero-based column index of the square to accent.</param>
         private void AccentLastMove(int row, int col)
         {
             if (_boardSquares == null)
