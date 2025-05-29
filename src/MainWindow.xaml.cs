@@ -21,10 +21,17 @@ using Checkers.Managers;
 
 namespace Checkers
 {
+
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Represents the main window of the Checkers application, providing the user interface and managing interactions
+    /// between the game board, game manager, and user input.
     /// </summary>
-    public partial class MainWindow : Window
+    /// <remarks>The <see cref="MainWindow"/> class initializes the game board, manages game state through the
+    /// <see cref="GameManager"/>, and provides UI elements such as menus and dialogs for starting new games and
+    /// interacting with the application. It also handles visual elements like board colors, piece rendering, and
+    /// animations (e.g., confetti).  This class is responsible for creating and managing the checkers board,
+    /// initializing game settings, and responding to user actions such as starting a new game or forfeiting.</remarks>
+    public partial class MainWindow
     {
         // Store references to all board squares
         private Button[,] _boardSquares = new Button[8, 8];
@@ -32,8 +39,6 @@ namespace Checkers
         // Board colors
         private SolidColorBrush _lightSquareColor;
         private SolidColorBrush _darkSquareColor;
-        private SolidColorBrush _redPieceColor;
-        private SolidColorBrush _blackPieceColor;
     
         // Highlight colors for valid moves
         private SolidColorBrush _lightSquareHighlightColor;
@@ -48,6 +53,16 @@ namespace Checkers
         public SolidColorBrush LightSquareHighlightColor => _lightSquareHighlightColor;
         public SolidColorBrush DarkSquareHighlightColor => _darkSquareHighlightColor;
     
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MainWindow"/> class.
+        /// </summary>
+        /// <remarks>This constructor sets up the main window for the checkers game by performing the
+        /// following tasks: <list type="bullet"> <item><description>Retrieves color resources for the board and
+        /// pieces.</description></item> <item><description>Generates highlight colors for board
+        /// squares.</description></item> <item><description>Initializes the checkers board layout.</description></item>
+        /// <item><description>Creates and initializes the game manager to handle game logic.</description></item>
+        /// <item><description>Adds a "New Game" menu item to the user interface.</description></item> </list> If the
+        /// required "CheckersBoard" grid control is not found in the XAML, an error message is displayed.</remarks>
         public MainWindow()
         {
             InitializeComponent();
@@ -55,8 +70,6 @@ namespace Checkers
             // Get colors from resources
             _lightSquareColor = (SolidColorBrush)FindResource("LightSquareColor");
             _darkSquareColor = (SolidColorBrush)FindResource("DarkSquareColor");
-            _redPieceColor = (SolidColorBrush)FindResource("RedPieceColor");
-            _blackPieceColor = (SolidColorBrush)FindResource("BlackPieceColor");
         
             // Create highlight colors (lighter versions of the regular colors)
             _lightSquareHighlightColor = new SolidColorBrush(Color.FromRgb(
@@ -98,6 +111,13 @@ namespace Checkers
             CreateGameMenu();
         }
 
+        /// <summary>
+        /// Initializes the checkerboard by creating and styling the squares, and adding them to the grid.
+        /// </summary>
+        /// <remarks>This method dynamically generates an 8x8 grid of buttons to represent the
+        /// checkerboard. Each square is styled based on its position to alternate between light and dark colors, and
+        /// its position is stored in the <see cref="Tag"/> property of the button. The method requires a grid named
+        /// "CheckersBoard" to be defined in the XAML file.</remarks>
         private void InitializeCheckerBoard()
         {
             // Make sure we have a reference to the grid named CheckersBoard from XAML
@@ -132,6 +152,15 @@ namespace Checkers
             }
         }
 
+        /// <summary>
+        /// Creates and initializes the game menu, including options for starting new games, forfeiting,  and testing
+        /// debug features. The menu is added to the main window's layout.
+        /// </summary>
+        /// <remarks>This method dynamically constructs a menu bar with various game-related options, such
+        /// as starting  a new game or forfeiting the current game. It also includes a debug menu for testing features
+        /// like  confetti animations. The menu is integrated into the main window's layout, adjusting existing  content
+        /// to accommodate the new menu.  If an error occurs during menu creation, an error message is displayed to the
+        /// user.</remarks>
         private void CreateGameMenu()
         {
             try
@@ -204,12 +233,22 @@ namespace Checkers
             NewGame(GameMode.SinglePlayer);
         }
     
+        /// <summary>
+        /// Handles the click event to start a new two-player game.
+        /// </summary>
+        /// <param name="sender">The source of the event, typically the button that was clicked.</param>
+        /// <param name="e">The event data associated with the click event.</param>
         private void NewTwoPlayerGame_Click(object sender, RoutedEventArgs e)
         {
             // Start a new two-player game directly
             NewGame(GameMode.TwoPlayer);
         }
     
+        /// <summary>
+        /// Displays a dialog for selecting a game mode and starts a new game if a selection is confirmed.
+        /// </summary>
+        /// <remarks>The dialog allows the user to choose a game mode. If the user confirms their
+        /// selection,  the method initiates a new game using the selected game mode.</remarks>
         private void ShowGameModeDialog()
         {
             var dialog = new GameModeDialog();
@@ -223,6 +262,14 @@ namespace Checkers
             }
         }
     
+        /// <summary>
+        /// Starts a new game with the specified game mode.
+        /// </summary>
+        /// <remarks>This method initializes a new game session using the provided game mode. If the game
+        /// manager  is not properly initialized, an error message is displayed to the user. Additionally, the  window
+        /// title is updated to reflect the selected game mode.</remarks>
+        /// <param name="gameMode">The mode of the game to start. Use <see cref="GameMode.SinglePlayer"/> for single-player mode  or <see
+        /// cref="GameMode.TwoPlayer"/> for two-player mode.</param>
         public void NewGame(GameMode gameMode)
         {
             // Use the game manager to start a new game if it's initialized
@@ -249,75 +296,12 @@ namespace Checkers
             }
         }
 
-        // Legacy methods from the original code, can be removed if not used
-        public void AddPiece(int row, int col, bool isRed, bool isKing = false)
-        {
-            if (row < 0 || row > 7 || col < 0 || col > 7)
-            {
-                return;
-            }
-
-            var square = _boardSquares[row, col];
-        
-            // Create the piece visual
-            var ellipse = new Ellipse
-            {
-                Width = 40,
-                Height = 40,
-                Fill = isRed ? _redPieceColor : _blackPieceColor,
-                Stroke = Brushes.White,
-                StrokeThickness = 2,
-                Margin = new Thickness(5)
-            };
-        
-            // If it's a king, add a crown or marker
-            if (isKing)
-            {
-                // Simple crown representation
-                var crownPath = new Path
-                {
-                    Data = Geometry.Parse("M 10,15 L 15,5 L 20,15 L 25,5 L 30,15 L 25,20 L 15,20 Z"),
-                    Fill = Brushes.Gold,
-                    Stretch = Stretch.Uniform,
-                    Width = 20,
-                    Height = 10
-                };
-            
-                var panel = new Grid();
-                panel.Children.Add(ellipse);
-                panel.Children.Add(crownPath);
-            
-                square.Content = panel;
-            }
-            else
-            {
-                square.Content = ellipse;
-            }
-        }
-    
-        // Method to clear a piece from a specific square
-        public void ClearPiece(int row, int col)
-        {
-            if (row < 0 || row > 7 || col < 0 || col > 7)
-            {
-                return;
-            }
-
-            _boardSquares[row, col].Content = null;
-        }
-    
-        // Method to clear all pieces from the board
-        public void ClearBoard()
-        {
-            for (int row = 0; row < 8; row++)
-            {
-                for (int col = 0; col < 8; col++)
-                {
-                    _boardSquares[row, col].Content = null;
-                }
-            }
-        }
-
+        /// <summary>
+        /// Handles the click event for the "Forfeit" menu item.
+        /// </summary>
+        /// <remarks>This method triggers the forfeit action in the game manager, if available.</remarks>
+        /// <param name="sender">The source of the event, typically the menu item that was clicked.</param>
+        /// <param name="e">The event data associated with the click event.</param>
         private void ForfeitMenuItem_Click(object sender, RoutedEventArgs e)
         {
             _gameManager?.Forfeit();

@@ -6,6 +6,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <Version>2025.5.18.1</Version>
+    <Company>Blake Pell</Company>
+    <Description>A checkers game.</Description>
   </PropertyGroup>
 
   <ItemGroup>

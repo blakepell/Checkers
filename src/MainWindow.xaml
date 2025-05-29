@@ -18,14 +18,6 @@
         <SolidColorBrush x:Key="LightSquareColor" Color="#F0D2B4" />
         <!--  Light Beige  -->
         <SolidColorBrush x:Key="DarkSquareColor" Color="#B58863" />
-        <!--  Dark Brown  -->
-
-        <!--  Define standard colors for checkers pieces  -->
-        <SolidColorBrush x:Key="RedPieceColor" Color="#9E0B0F" />
-        <!--  Dark Red for pieces  -->
-        <SolidColorBrush x:Key="BlackPieceColor" Color="#212121" />
-        <!--  Nearly Black for pieces  -->
-
         <!--  Felt green background behind the board  -->
         <SolidColorBrush x:Key="FeltBackgroundBrush" Color="#0B701A" />
 
