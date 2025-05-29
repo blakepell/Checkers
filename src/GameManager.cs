@@ -13,12 +13,12 @@ namespace Checkers
     {
         private readonly MainWindow _mainWindow;
         private readonly Grid _board;
-        private readonly Button[,] _boardSquares;
+        private readonly Button[,]? _boardSquares;
         private Player _currentPlayer;
         private CheckersPiece? _selectedPiece;
         private List<Point>? _validMoves;
         // Track game state
-        private CheckersPiece?[,] _pieces;
+        private CheckersPiece?[,]? _pieces;
         private bool _gameInProgress;
         private bool _isInMultiJump; // Flag to track if a player is in the middle of multiple jumps
         private CheckersPiece? _multiJumpPiece; // The piece that's currently performing multiple jumps
@@ -65,6 +65,7 @@ namespace Checkers
             {
                 // Clear the board first
                 ClearBoard();
+
                 // Reset game state
                 _currentPlayer = Player.Red;  // Red goes first
                 _gameInProgress = true;
@@ -72,10 +73,15 @@ namespace Checkers
                 _isInMultiJump = false;
                 _multiJumpPiece = null;
                 _gameMode = gameMode;
+
                 if (_validMoves == null)
+                {
                     _validMoves = new List<Point>();
+                }
                 else
+                {
                     _validMoves.Clear();
+                }
 
                 // Set up initial piece positions
                 SetupInitialBoard();
@@ -126,7 +132,9 @@ namespace Checkers
             try
             {
                 if (!IsValidPosition(row, col) || _boardSquares == null || _pieces == null)
+                {
                     return;
+                }
 
                 // Create the checkers piece
                 var piece = new CheckersPiece
@@ -173,6 +181,11 @@ namespace Checkers
         }
         private void ClearBoard()
         {
+            if (_boardSquares == null)
+            {
+                return;
+            }
+
             try
             {
                 // First, remove event handlers from all pieces to prevent memory leaks
@@ -232,13 +245,20 @@ namespace Checkers
 
         private void ResetBoardSquares()
         {
+            if (_boardSquares == null)
+            {
+                return;
+            }
+
             // Re-configure all square event handlers
             for (int row = 0; row < 8; row++)
             {
                 for (int col = 0; col < 8; col++)
                 {
                     if (_boardSquares == null || _boardSquares[row, col] == null)
+                    {
                         continue;
+                    }
 
                     var square = _boardSquares[row, col];
 
@@ -260,7 +280,9 @@ namespace Checkers
         {
             // If game is not in progress, do nothing
             if (!_gameInProgress)
+            {
                 return;
+            }
 
             var piece = sender as CheckersPiece;
 
@@ -268,8 +290,11 @@ namespace Checkers
             if (_isInMultiJump)
             {
                 if (piece != _multiJumpPiece)
+                {
                     return;
+                }
             }
+
             // Otherwise, can only select own pieces during your turn
             else if (piece?.Player != _currentPlayer)
             {
@@ -281,6 +306,7 @@ namespace Checkers
 
             // Clear previous valid moves
             ClearHighlights();
+
             // Find and highlight valid moves
             _validMoves = _selectedPiece != null ? GetValidMoves(_selectedPiece) : new List<Point>();
             HighlightValidMoves(_validMoves);
@@ -291,11 +317,16 @@ namespace Checkers
         {
             // If game is not in progress or no piece selected, do nothing
             if (!_gameInProgress || _selectedPiece == null)
+            {
                 return;
+            }
 
             var square = sender as Button;
+
             if (square == null || square.Tag == null)
+            {
                 return;
+            }
 
             var position = (Point)square.Tag;
             int targetRow = (int)position.X;
@@ -303,11 +334,15 @@ namespace Checkers
 
             // Check if this is a valid move and if _validMoves is initialized
             if (_validMoves == null || !IsValidMove(_selectedPiece, targetRow, targetCol))
+            {
                 return;
+            }
 
             // If in multi-jump mode, only allow the multi-jump piece to move
             if (_isInMultiJump && _multiJumpPiece != _selectedPiece)
+            {
                 return;
+            }
 
             // Execute the move
             MovePiece(_selectedPiece, targetRow, targetCol);
@@ -332,8 +367,11 @@ namespace Checkers
             if (_selectedPiece != null)
             {
                 var square = sender as Button;
+
                 if (square?.Tag == null)
+                {
                     return;
+                }
 
                 var position = (Point)square.Tag;
                 int targetRow = (int)position.X;
@@ -350,8 +388,7 @@ namespace Checkers
         private void Square_DragLeave(object sender, DragEventArgs e)
         {
             // Reset opacity
-            var square = sender as Button;
-            if (square != null)
+            if (sender is Button square)
             {
                 square.Opacity = 1.0;
             }
@@ -362,11 +399,15 @@ namespace Checkers
         {
             // If game not in progress or no piece selected, do nothing
             if (!_gameInProgress || _selectedPiece == null)
+            {
                 return;
+            }
 
             var square = sender as Button;
             if (square?.Tag == null)
+            {
                 return;
+            }
 
             var position = (Point)square.Tag;
             int targetRow = (int)position.X;
@@ -374,11 +415,15 @@ namespace Checkers
 
             // Validate move
             if (_validMoves == null || !IsValidMove(_selectedPiece, targetRow, targetCol))
+            {
                 return;
+            }
 
             // If multi-jump constraint
             if (_isInMultiJump && _multiJumpPiece != _selectedPiece)
+            {
                 return;
+            }
 
             // Perform move
             MovePiece(_selectedPiece, targetRow, targetCol);
@@ -393,8 +438,8 @@ namespace Checkers
 
             e.Handled = true;
         }
-        
-        private List<Point> GetValidMoves(CheckersPiece piece)
+
+        private List<Point> GetValidMoves(CheckersPiece? piece)
         {
             var moves = new List<Point>();
             var jumpMoves = new List<Point>();
@@ -402,11 +447,13 @@ namespace Checkers
             try
             {
                 if (piece == null || _pieces == null)
+                {
                     return moves;
+                }
 
                 int row = piece.Row;
                 int col = piece.Column;
-                Player player = piece.Player;
+                var player = piece.Player;
                 bool isKing = piece.IsKing;
 
                 // Direction of movement depends on player (unless it's a king)
@@ -460,12 +507,16 @@ namespace Checkers
         private bool IsValidMove(CheckersPiece piece, int targetRow, int targetCol)
         {
             if (_validMoves == null)
+            {
                 return false;
+            }
 
             foreach (var move in _validMoves)
             {
                 if ((int)move.X == targetRow && (int)move.Y == targetCol)
+                {
                     return true;
+                }
             }
 
             return false;
@@ -475,7 +526,9 @@ namespace Checkers
             try
             {
                 if (piece == null || _pieces == null || _boardSquares == null)
+                {
                     return;
+                }
 
                 // Get source position
                 int sourceRow = piece.Row;
@@ -519,7 +572,9 @@ namespace Checkers
                     // Promotion check
                     bool isPromotion = ShouldPromoteToKing(piece, targetRow);
                     if (isPromotion)
+                    {
                         piece.IsKing = true;
+                    }
 
                     // Play appropriate sound
                     if (_soundsEnabled)
@@ -532,9 +587,13 @@ namespace Checkers
                         {
                             // If AI performing jump, play computer jump sound, otherwise player jump sound
                             if (_gameMode == GameMode.SinglePlayer && piece.Player == Player.Black)
+                            {
                                 _computerJumpSound.Play();
+                            }
                             else
+                            {
                                 _jumpSound.Play();
+                            }
                         }
                         else
                         {
@@ -594,8 +653,15 @@ namespace Checkers
 
         private void RemovePiece(int row, int col)
         {
-            if (!IsValidPosition(row, col) || _pieces[row, col] == null)
+            if (_boardSquares == null || _pieces == null)
+            {
                 return;
+            }
+
+            if (!IsValidPosition(row, col) || _pieces[row, col] == null)
+            {
+                return;
+            }
 
             // Remove from UI
             _boardSquares[row, col].Content = null;
@@ -608,21 +674,32 @@ namespace Checkers
         {
             // Prevent re-promoting an already-king piece
             if (piece.IsKing)
+            {
                 return false;
+            }
 
             // Red pieces become kings on row 0
             if (piece.Player == Player.Red && row == 0)
+            {
                 return true;
+            }
 
             // Black pieces become kings on row 7
             if (piece.Player == Player.Black && row == 7)
+            {
                 return true;
+            }
 
             return false;
         }
 
         private void HighlightValidMoves(List<Point> moves)
         {
+            if (_boardSquares == null)
+            {
+                return;
+            }
+
             foreach (var move in moves)
             {
                 int row = (int)move.X;
@@ -641,6 +718,11 @@ namespace Checkers
 
         private void ClearHighlights()
         {
+            if (_boardSquares == null)
+            {
+                return;
+            }
+
             for (int row = 0; row < 8; row++)
             {
                 for (int col = 0; col < 8; col++)
@@ -665,7 +747,9 @@ namespace Checkers
             var jumps = new List<Point>();
 
             if (piece == null || _pieces == null)
+            {
                 return jumps;
+            }
 
             int row = piece.Row;
             int col = piece.Column;
@@ -702,7 +786,9 @@ namespace Checkers
             {
                 // If we're in multi-jump mode, don't check for game end yet
                 if (_isInMultiJump)
+                {
                     return;
+                }
 
                 // Check for the "only two kings left" draw condition
                 if (CheckForTwoKingsDrawCondition())
@@ -722,7 +808,10 @@ namespace Checkers
                         for (int col = 0; col < 8; col++)
                         {
                             var piece = _pieces[row, col];
-                            if (piece == null) continue;
+                            if (piece == null)
+                            {
+                                continue;
+                            }
 
                             if (piece.Player == Player.Red && GetValidMoves(piece).Count > 0)
                             {
@@ -735,7 +824,9 @@ namespace Checkers
 
                             // Early exit if both players have playable pieces
                             if (redHasPlayablePieces && blackHasPlayablePieces)
+                            {
                                 return;
+                            }
                         }
                     }
                 }
@@ -770,7 +861,9 @@ namespace Checkers
         {
             // It's a draw if there is exactly one red king and one black king left
             if (_pieces == null)
+            {
                 return false;
+            }
 
             int redKings = 0;
             int blackKings = 0;
@@ -788,9 +881,13 @@ namespace Checkers
                         if (_pieces[row, col]!.IsKing)
                         {
                             if (_pieces[row, col]!.Player == Player.Red)
+                            {
                                 redKings++;
+                            }
                             else
+                            {
                                 blackKings++;
+                            }
                         }
 
                         // If we find more than 2 pieces, this isn't a draw condition
@@ -814,7 +911,9 @@ namespace Checkers
 
             // Play game over sound
             if (_soundsEnabled)
+            {
                 _gameOverSound.Play();
+            }
         }
 
         /// <summary>
@@ -823,14 +922,16 @@ namespace Checkers
         public void Forfeit()
         {
             if (!_gameInProgress)
+            {
                 return;
+            }
 
             // Clear any highlights and selection
             ClearHighlights();
             _selectedPiece = null;
 
             // Determine opponent as winner
-            Player winner = _currentPlayer == Player.Red ? Player.Black : Player.Red;
+            var winner = _currentPlayer == Player.Red ? Player.Black : Player.Red;
             EndGame(winner);
         }
 
@@ -840,7 +941,9 @@ namespace Checkers
             try
             {
                 if (_gameMode != GameMode.SinglePlayer || _currentPlayer != Player.Black)
+                {
                     return;
+                }
 
                 // Add a small delay to make the AI move seem more natural
                 System.Threading.Thread.Sleep(500);
@@ -875,7 +978,9 @@ namespace Checkers
                     }
                 }                // No valid moves, AI loses
                 if (aiPieces.Count == 0)
+                {
                     return;
+                }
 
                 // Prioritize pieces that can capture
                 var selectedPieces = allJumpPieces.Count > 0 ? allJumpPieces : aiPieces;
@@ -923,31 +1028,44 @@ namespace Checkers
         private Point SelectBestMove(CheckersPiece aiPiece, List<Point> validMoves)
         {
             if (validMoves == null || validMoves.Count == 0)
+            {
                 throw new InvalidOperationException("No valid moves available for AI.");
+            }
 
             // 1. Jumps (capturing moves)
             var jumpMoves = new List<Point>();
+
             foreach (var move in validMoves)
             {
                 if (Math.Abs(aiPiece.Row - (int)move.X) == 2)
+                {
                     jumpMoves.Add(move);
+                }
             }
+
             if (jumpMoves.Count > 0)
             {
                 // Prefer jumps that promote to king
                 var promoteJumps = jumpMoves.Where(j => (int)j.X == 7 && !aiPiece.IsKing).ToList();
                 if (promoteJumps.Count > 0)
+                {
                     return promoteJumps.First();
+                }
+
                 return jumpMoves[_random.Next(jumpMoves.Count)];
             }
 
             // 2. Moves that make a king
             var kingMoves = validMoves.Where(m => (int)m.X == 7 && !aiPiece.IsKing).ToList();
+
             if (kingMoves.Count > 0)
+            {
                 return kingMoves.First();
+            }
 
             // 3. Moves that avoid immediate capture
             var safeMoves = new List<Point>();
+
             foreach (var move in validMoves)
             {
                 int targetRow = (int)move.X;
@@ -987,11 +1105,16 @@ namespace Checkers
                 // Restore board
                 _pieces[origRow, origCol] = aiPiece;
                 _pieces[targetRow, targetCol] = displaced;
+
                 if (isSafe)
+                {
                     safeMoves.Add(move);
+                }
             }
             if (safeMoves.Count > 0)
+            {
                 return safeMoves[_random.Next(safeMoves.Count)];
+            }
 
             // 4. Default: random move
             return validMoves[_random.Next(validMoves.Count)];
@@ -1016,6 +1139,11 @@ namespace Checkers
 
         private void ClearLastMoveAccent()
         {
+            if (_boardSquares == null)
+            {
+                return;
+            }
+
             if (_lastMoveTarget.HasValue)
             {
                 int row = (int)_lastMoveTarget.Value.X;
@@ -1029,6 +1157,11 @@ namespace Checkers
 
         private void AccentLastMove(int row, int col)
         {
+            if (_boardSquares == null)
+            {
+                return;
+            }
+
             var square = _boardSquares[row, col];
             square.BorderBrush = _lastMoveAccentBrush;
             square.BorderThickness = _lastMoveAccentThickness;

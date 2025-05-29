@@ -26,61 +26,62 @@ namespace Checkers;
 public partial class MainWindow : Window
 {
     // Store references to all board squares
-    private Button[,] boardSquares = new Button[8, 8];
+    private Button[,] _boardSquares = new Button[8, 8];
     
     // Board colors
-    private SolidColorBrush lightSquareColor;
-    private SolidColorBrush darkSquareColor;
-    private SolidColorBrush redPieceColor;
-    private SolidColorBrush blackPieceColor;
+    private SolidColorBrush _lightSquareColor;
+    private SolidColorBrush _darkSquareColor;
+    private SolidColorBrush _redPieceColor;
+    private SolidColorBrush _blackPieceColor;
     
     // Highlight colors for valid moves
-    private SolidColorBrush lightSquareHighlightColor;
-    private SolidColorBrush darkSquareHighlightColor;
+    private SolidColorBrush _lightSquareHighlightColor;
+    private SolidColorBrush _darkSquareHighlightColor;
     
     // Game manager
-    private GameManager? gameManager;
-    
+    private GameManager? _gameManager;
+
     // Public properties for GameManager to access
-    public SolidColorBrush LightSquareColor => lightSquareColor;
-    public SolidColorBrush DarkSquareColor => darkSquareColor;
-    public SolidColorBrush LightSquareHighlightColor => lightSquareHighlightColor;
-    public SolidColorBrush DarkSquareHighlightColor => darkSquareHighlightColor;
+    public SolidColorBrush LightSquareColor => _lightSquareColor;
+    public SolidColorBrush DarkSquareColor => _darkSquareColor;
+    public SolidColorBrush LightSquareHighlightColor => _lightSquareHighlightColor;
+    public SolidColorBrush DarkSquareHighlightColor => _darkSquareHighlightColor;
     
     public MainWindow()
     {
         InitializeComponent();
         
         // Get colors from resources
-        lightSquareColor = (SolidColorBrush)FindResource("LightSquareColor");
-        darkSquareColor = (SolidColorBrush)FindResource("DarkSquareColor");
-        redPieceColor = (SolidColorBrush)FindResource("RedPieceColor");
-        blackPieceColor = (SolidColorBrush)FindResource("BlackPieceColor");
+        _lightSquareColor = (SolidColorBrush)FindResource("LightSquareColor");
+        _darkSquareColor = (SolidColorBrush)FindResource("DarkSquareColor");
+        _redPieceColor = (SolidColorBrush)FindResource("RedPieceColor");
+        _blackPieceColor = (SolidColorBrush)FindResource("BlackPieceColor");
         
         // Create highlight colors (lighter versions of the regular colors)
-        lightSquareHighlightColor = new SolidColorBrush(Color.FromRgb(
-            (byte)Math.Min(lightSquareColor.Color.R + 20, 255),
-            (byte)Math.Min(lightSquareColor.Color.G + 20, 255),
-            (byte)Math.Min(lightSquareColor.Color.B - 20, 255)
+        _lightSquareHighlightColor = new SolidColorBrush(Color.FromRgb(
+            (byte)Math.Min(_lightSquareColor.Color.R + 20, 255),
+            (byte)Math.Min(_lightSquareColor.Color.G + 20, 255),
+            (byte)Math.Min(_lightSquareColor.Color.B - 20, 255)
         ));
         
-        darkSquareHighlightColor = new SolidColorBrush(Color.FromRgb(
-            (byte)Math.Min(darkSquareColor.Color.R + 20, 255),
-            (byte)Math.Min(darkSquareColor.Color.G + 20, 255),
-            (byte)Math.Min(darkSquareColor.Color.B - 20, 255)
+        _darkSquareHighlightColor = new SolidColorBrush(Color.FromRgb(
+            (byte)Math.Min(_darkSquareColor.Color.R + 20, 255),
+            (byte)Math.Min(_darkSquareColor.Color.G + 20, 255),
+            (byte)Math.Min(_darkSquareColor.Color.B - 20, 255)
         ));
         
-        // Create the checker board squares
+        // Create the checkers board squares
         InitializeCheckerBoard();
         
         // Initialize the game manager after creating the board
         try 
         {
             // Make sure we have a reference to the grid named CheckersBoard from XAML
-            Grid checkersBoard = (Grid)FindName("CheckersBoard");
+            var checkersBoard = (Grid?)FindName("CheckersBoard");
+
             if (checkersBoard != null) 
             {
-                gameManager = new GameManager(this, checkersBoard, boardSquares);
+                _gameManager = new GameManager(this, checkersBoard, _boardSquares);
             }
             else 
             {
@@ -99,7 +100,8 @@ public partial class MainWindow : Window
     private void InitializeCheckerBoard()
     {
         // Make sure we have a reference to the grid named CheckersBoard from XAML
-        Grid checkersBoard = (Grid)FindName("CheckersBoard");
+        var checkersBoard = (Grid?)FindName("CheckersBoard");
+
         if (checkersBoard == null)
         {
             MessageBox.Show("Could not find the CheckersBoard control.");
@@ -114,12 +116,12 @@ public partial class MainWindow : Window
                 var square = new Button
                 {
                     Style = (Style)FindResource("CheckersSquareStyle"),
-                    Background = (row + col) % 2 == 0 ? lightSquareColor : darkSquareColor,
+                    Background = (row + col) % 2 == 0 ? _lightSquareColor : _darkSquareColor,
                     Tag = new Point(row, col) // Store the position for later use
                 };
 
                 // Add to our reference array and to the grid
-                boardSquares[row, col] = square;
+                _boardSquares[row, col] = square;
                 
                 // Add the button to the grid
                 checkersBoard.Children.Add(square);
@@ -223,11 +225,11 @@ public partial class MainWindow : Window
     public void NewGame(GameMode gameMode)
     {
         // Use the game manager to start a new game if it's initialized
-        if (gameManager != null)
+        if (_gameManager != null)
         {
             try
             {
-                gameManager.NewGame(gameMode);
+                _gameManager.NewGame(gameMode);
                 
                 // Update window title based on game mode
                 Title = gameMode == GameMode.SinglePlayer ? 
@@ -250,16 +252,18 @@ public partial class MainWindow : Window
     public void AddPiece(int row, int col, bool isRed, bool isKing = false)
     {
         if (row < 0 || row > 7 || col < 0 || col > 7)
+        {
             return;
-            
-        var square = boardSquares[row, col];
+        }
+
+        var square = _boardSquares[row, col];
         
         // Create the piece visual
         var ellipse = new Ellipse
         {
             Width = 40,
             Height = 40,
-            Fill = isRed ? redPieceColor : blackPieceColor,
+            Fill = isRed ? _redPieceColor : _blackPieceColor,
             Stroke = Brushes.White,
             StrokeThickness = 2,
             Margin = new Thickness(5)
@@ -294,9 +298,11 @@ public partial class MainWindow : Window
     public void ClearPiece(int row, int col)
     {
         if (row < 0 || row > 7 || col < 0 || col > 7)
+        {
             return;
-            
-        boardSquares[row, col].Content = null;
+        }
+
+        _boardSquares[row, col].Content = null;
     }
     
     // Method to clear all pieces from the board
@@ -306,14 +312,14 @@ public partial class MainWindow : Window
         {
             for (int col = 0; col < 8; col++)
             {
-                boardSquares[row, col].Content = null;
+                _boardSquares[row, col].Content = null;
             }
         }
     }
 
     private void ForfeitMenuItem_Click(object sender, RoutedEventArgs e)
     {
-        gameManager?.Forfeit();
+        _gameManager?.Forfeit();
     }
 
     /// <summary>
@@ -323,8 +329,11 @@ public partial class MainWindow : Window
     {
         // Find the confetti canvas in case it's not exposed as a field
         var canvas = FindName("ConfettiCanvas") as Canvas;
+
         if (canvas == null)
+        {
             return;
+        }
 
         // Ensure canvas is ready
         canvas.Children.Clear();
