@@ -1,0 +1,58 @@
+<Window
+    x:Class="Checkers.Dialogs.GameModeDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Select Game Mode"
+    Width="300"
+    Height="200"
+    ResizeMode="NoResize"
+    WindowStartupLocation="CenterOwner">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock
+            Grid.Row="0"
+            Margin="0,0,0,10"
+            FontSize="16"
+            FontWeight="Bold"
+            Text="Select Game Mode:" />
+
+        <StackPanel Grid.Row="1" Orientation="Vertical">
+            <RadioButton
+                x:Name="SinglePlayerRadio"
+                Margin="0,5"
+                Content="Single Player (vs. Computer)"
+                GroupName="GameMode"
+                IsChecked="True" />
+            <RadioButton
+                x:Name="TwoPlayerRadio"
+                Margin="0,5"
+                Content="Two Player (vs. Another Human)"
+                GroupName="GameMode" />
+        </StackPanel>
+
+        <StackPanel
+            Grid.Row="2"
+            Margin="0,10,0,0"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal">
+            <Button
+                x:Name="StartButton"
+                Width="80"
+                Height="30"
+                Click="StartButton_Click"
+                Content="Start Game" />
+            <Button
+                x:Name="CancelButton"
+                Width="80"
+                Height="30"
+                Margin="10,0,0,0"
+                Click="CancelButton_Click"
+                Content="Cancel" />
+        </StackPanel>
+    </Grid>
+</Window>

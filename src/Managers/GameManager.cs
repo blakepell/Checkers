@@ -9,17 +9,13 @@
  * @license           : MIT
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.IO;
-using System.Media;
 using System.Windows.Media;
+using Checkers.Common;
 using Checkers.Controls;
 
-namespace Checkers
+namespace Checkers.Managers
 {
     /// <summary>
     /// Manages the state and logic of a checkers game, including player turns, piece movements,  game rules, and
@@ -45,11 +41,6 @@ namespace Checkers
         private GameMode _gameMode; // Current game mode (single or two player)
         private Random _random; // For AI moves
         private bool _soundsEnabled = true;
-        private readonly SoundPlayer _moveSound;
-        private readonly SoundPlayer _jumpSound;
-        private readonly SoundPlayer _kingSound;
-        private readonly SoundPlayer _computerJumpSound;
-        private readonly SoundPlayer _gameOverSound;
         // Last move accenting
         private Point? _lastMoveTarget;
         private readonly Brush _lastMoveAccentBrush = Brushes.Gold;
@@ -84,11 +75,6 @@ namespace Checkers
 
             // Initialize sound players
             string basePath = AppDomain.CurrentDomain.BaseDirectory;
-            _jumpSound = new SoundPlayer(Path.Combine(basePath, "Assets", "Audio", "Jump.wav"));
-            _kingSound = new SoundPlayer(Path.Combine(basePath, "Assets", "Audio", "King.wav"));
-            _moveSound = new SoundPlayer(Path.Combine(basePath, "Assets", "Audio", "Move.wav"));
-            _computerJumpSound = new SoundPlayer(Path.Combine(basePath, "Assets", "Audio", "ComputerJump.wav"));
-            _gameOverSound = new SoundPlayer(Path.Combine(basePath, "Assets", "Audio", "GameOver.wav"));
             _soundsEnabled = true;
         }
         
@@ -586,8 +572,8 @@ namespace Checkers
                         // Jump move (capturing an opponent's piece)
                         int newRow = row + rowDir;
                         int newCol = col + colDir;
-                        int jumpRow = row + (rowDir * 2);
-                        int jumpCol = col + (colDir * 2);
+                        int jumpRow = row + rowDir * 2;
+                        int jumpCol = col + colDir * 2;
 
                         if (IsValidPosition(newRow, newCol) && IsValidPosition(jumpRow, jumpCol) &&
                             _pieces[newRow, newCol] != null && _pieces[newRow, newCol]!.Player != player &&
@@ -682,8 +668,8 @@ namespace Checkers
                 if (isJumpMove)
                 {
                     // Calculate position of captured piece
-                    int capturedRow = sourceRow + ((targetRow - sourceRow) / 2);
-                    int capturedCol = sourceCol + ((targetCol - sourceCol) / 2);
+                    int capturedRow = sourceRow + (targetRow - sourceRow) / 2;
+                    int capturedCol = sourceCol + (targetCol - sourceCol) / 2;
 
                     // Remove the captured piece
                     RemovePiece(capturedRow, capturedCol);
@@ -723,23 +709,23 @@ namespace Checkers
                     {
                         if (isPromotion)
                         {
-                            _kingSound.Play();
+                            SoundManager.KingSound.Play();
                         }
                         else if (isJumpMove)
                         {
                             // If AI performing jump, play computer jump sound, otherwise player jump sound
                             if (_gameMode == GameMode.SinglePlayer && piece.Player == Player.Black)
                             {
-                                _computerJumpSound.Play();
+                                SoundManager.ComputerJumpSound.Play();
                             }
                             else
                             {
-                                _jumpSound.Play();
+                                SoundManager.JumpSound.Play();
                             }
                         }
                         else
                         {
-                            _moveSound.Play();
+                            SoundManager.MoveSound.Play();
                         }
                     }
 
@@ -943,8 +929,8 @@ namespace Checkers
                     // Check for jump moves only
                     int newRow = row + rowDir;
                     int newCol = col + colDir;
-                    int jumpRow = row + (rowDir * 2);
-                    int jumpCol = col + (colDir * 2);
+                    int jumpRow = row + rowDir * 2;
+                    int jumpCol = col + colDir * 2;
 
                     if (IsValidPosition(newRow, newCol) && IsValidPosition(jumpRow, jumpCol) &&
                         _pieces[newRow, newCol] != null && _pieces[newRow, newCol]!.Player != player &&
@@ -1045,7 +1031,7 @@ namespace Checkers
         {
             _gameInProgress = false;
 
-            _gameOverSound.Play();
+            SoundManager.GameOverSound.Play();
             _mainWindow.StartConfetti();  // Launch confetti animation on win
 
             // Show game over message
@@ -1103,7 +1089,7 @@ namespace Checkers
             }
 
             // It's a draw if there is exactly one red king and one black king
-            return (redKings == 1) && (blackKings == 1);
+            return redKings == 1 && blackKings == 1;
         }
 
         /// <summary>
@@ -1121,7 +1107,7 @@ namespace Checkers
             // Play game over sound
             if (_soundsEnabled)
             {
-                _gameOverSound.Play();
+                SoundManager.GameOverSound.Play();
             }
         }
 
@@ -1161,7 +1147,7 @@ namespace Checkers
                 }
 
                 // Add a small delay to make the AI move seem more natural
-                System.Threading.Thread.Sleep(500);
+                Thread.Sleep(500);
 
                 // Get all AI pieces with valid moves
                 var aiPieces = new List<CheckersPiece?>();

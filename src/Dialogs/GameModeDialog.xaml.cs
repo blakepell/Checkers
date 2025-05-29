@@ -10,8 +10,9 @@
  */
 
 using System.Windows;
+using Checkers.Common;
 
-namespace Checkers
+namespace Checkers.Dialogs
 {
     /// <summary>
     /// Represents a dialog for selecting a game mode.

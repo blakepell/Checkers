@@ -9,7 +9,7 @@
  * @license           : MIT
  */
 
-namespace Checkers
+namespace Checkers.Common
 {
     /// <summary>
     /// Represents the available game modes for a game.
