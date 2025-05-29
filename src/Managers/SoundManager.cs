@@ -11,32 +11,80 @@
 
 using System.IO;
 using System.Media;
+using Argus.Memory;
+using Checkers.Common;
 
 namespace Checkers.Managers
 {
     /// <summary>
-    /// Provides functionality for managing and playing sound effects in the application.
+    /// Represents the available sound effects.
     /// </summary>
-    /// <remarks>The <see cref="SoundManager"/> class initializes and provides access to preloaded sound
-    /// effects  that can be used throughout the application. All sound effects are loaded from the "Assets/Audio" 
-    /// directory relative to the application's base directory.   This class is static and cannot be instantiated. Use
-    /// the exposed static members to access the  available sound effects.</remarks>
+    public enum SoundEffect
+    {
+        Move,
+        Jump,
+        King,
+        ComputerJump,
+        GameOver
+    }
+
+    /// <summary>
+    /// Provides functionality to manage and play sound effects in the application.
+    /// </summary>
+    /// <remarks>The <see cref="SoundManager"/> class is a static utility for playing predefined sound
+    /// effects,  such as move, jump, and game over sounds. It uses the <see cref="SoundPlayer"/> class to load  and
+    /// play audio files located in the application's "Assets/Audio" directory.</remarks>
     public static class SoundManager
     {
-        public static readonly SoundPlayer MoveSound;
-        public static readonly SoundPlayer JumpSound;
-        public static readonly SoundPlayer KingSound;
-        public static readonly SoundPlayer ComputerJumpSound;
-        public static readonly SoundPlayer GameOverSound;
+        private static readonly SoundPlayer MoveSound;
+        private static readonly SoundPlayer JumpSound;
+        private static readonly SoundPlayer KingSound;
+        private static readonly SoundPlayer ComputerJumpSound;
+        private static readonly SoundPlayer GameOverSound;
 
         static SoundManager()
         {
             string basePath = AppDomain.CurrentDomain.BaseDirectory;
+            MoveSound = new SoundPlayer(Path.Combine(basePath, "Assets", "Audio", "Move.wav"));
             JumpSound = new SoundPlayer(Path.Combine(basePath, "Assets", "Audio", "Jump.wav"));
             KingSound = new SoundPlayer(Path.Combine(basePath, "Assets", "Audio", "King.wav"));
-            MoveSound = new SoundPlayer(Path.Combine(basePath, "Assets", "Audio", "Move.wav"));
             ComputerJumpSound = new SoundPlayer(Path.Combine(basePath, "Assets", "Audio", "ComputerJump.wav"));
             GameOverSound = new SoundPlayer(Path.Combine(basePath, "Assets", "Audio", "GameOver.wav"));
+        }
+
+        /// <summary>
+        /// Plays the specified sound effect.
+        /// </summary>
+        /// <param name="effect">The sound effect to play.</param>
+        public static void Play(SoundEffect effect)
+        {
+            var appSettings = AppServices.GetRequiredService<AppSettings>();
+
+            if (!appSettings.SoundEnabled)
+            {
+                return;
+            }
+
+            switch (effect)
+            {
+                case SoundEffect.Move:
+                    MoveSound.Play();
+                    break;
+                case SoundEffect.Jump:
+                    JumpSound.Play();
+                    break;
+                case SoundEffect.King:
+                    KingSound.Play();
+                    break;
+                case SoundEffect.ComputerJump:
+                    ComputerJumpSound.Play();
+                    break;
+                case SoundEffect.GameOver:
+                    GameOverSound.Play();
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

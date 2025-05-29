@@ -709,23 +709,23 @@ namespace Checkers.Managers
                     {
                         if (isPromotion)
                         {
-                            SoundManager.KingSound.Play();
+                            SoundManager.Play(SoundEffect.King);
                         }
                         else if (isJumpMove)
                         {
                             // If AI performing jump, play computer jump sound, otherwise player jump sound
                             if (_gameMode == GameMode.SinglePlayer && piece.Player == Player.Black)
                             {
-                                SoundManager.ComputerJumpSound.Play();
+                                SoundManager.Play(SoundEffect.ComputerJump);
                             }
                             else
                             {
-                                SoundManager.JumpSound.Play();
+                                SoundManager.Play(SoundEffect.Jump);
                             }
                         }
                         else
                         {
-                            SoundManager.MoveSound.Play();
+                            SoundManager.Play(SoundEffect.Move);
                         }
                     }
 
@@ -1031,7 +1031,7 @@ namespace Checkers.Managers
         {
             _gameInProgress = false;
 
-            SoundManager.GameOverSound.Play();
+            SoundManager.Play(SoundEffect.GameOver);
             _mainWindow.StartConfetti();  // Launch confetti animation on win
 
             // Show game over message
@@ -1107,7 +1107,7 @@ namespace Checkers.Managers
             // Play game over sound
             if (_soundsEnabled)
             {
-                SoundManager.GameOverSound.Play();
+                SoundManager.Play(SoundEffect.GameOver);
             }
         }
 
