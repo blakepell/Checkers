@@ -18,7 +18,7 @@
         <SolidColorBrush x:Key="LightSquareColor" Color="#F0D2B4" />
         <!--  Light Beige  -->
         <SolidColorBrush x:Key="DarkSquareColor" Color="#B58863" />
-        <!-- Border for the Board -->
+        <!--  Border for the Board  -->
         <SolidColorBrush x:Key="BoardBorderBrush" Color="#5B4532" />
         <!--  Felt green background behind the board  -->
         <SolidColorBrush x:Key="FeltBackgroundBrush" Color="#0B701A" />
