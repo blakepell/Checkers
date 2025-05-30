@@ -1389,5 +1389,48 @@ namespace Checkers.Managers
             square.BorderThickness = _lastMoveAccentThickness;
             _lastMoveTarget = new Point(row, col);
         }
+
+        // Helper method to determine if a move leaves the piece capturable
+        private bool IsCapturableAfterMove(Point move)
+        {
+            int targetRow = (int)move.X;
+            int targetCol = (int)move.Y;
+
+            // Simulate move
+            var displaced = _pieces[targetRow, targetCol];
+            _pieces[_selectedPiece.Row, _selectedPiece.Column] = null;
+            _pieces[targetRow, targetCol] = _selectedPiece;
+
+            bool isCapturable = false;
+
+            // Check potential captures by opponent
+            for (int row = Math.Max(0, targetRow - 2); row <= Math.Min(7, targetRow + 2) && !isCapturable; row++)
+            {
+                for (int col = Math.Max(0, targetCol - 2); col <= Math.Min(7, targetCol + 2) && !isCapturable; col++)
+                {
+                    var opp = _pieces[row, col];
+                    if (opp != null && opp.Player != _selectedPiece.Player)
+                    {
+                        var oppJumps = GetJumpsFromPosition(opp);
+                        foreach (var jump in oppJumps)
+                        {
+                            int capRow = (row + (int)jump.X) / 2;
+                            int capCol = (col + (int)jump.Y) / 2;
+                            if (capRow == targetRow && capCol == targetCol)
+                            {
+                                isCapturable = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Restore board
+            _pieces[_selectedPiece.Row, _selectedPiece.Column] = _selectedPiece;
+            _pieces[targetRow, targetCol] = displaced;
+
+            return isCapturable;
+        }
     }
 }
