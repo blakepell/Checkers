@@ -12,6 +12,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using Checkers.Common;
 using Checkers.Controls;
 
@@ -346,6 +347,12 @@ namespace Checkers.Managers
 
             var piece = sender as CheckersPiece;
 
+            // Reset old selection if any
+            if (_selectedPiece != null && _selectedPiece != piece)
+            {
+                ResetPieceVisual(_selectedPiece);
+            }
+
             // If in multi-jump mode, only the piece that's jumping can be selected
             if (_isInMultiJump)
             {
@@ -363,6 +370,7 @@ namespace Checkers.Managers
 
             // Select this piece and find valid moves
             _selectedPiece = piece;
+            SelectPieceVisual(piece);
 
             // Clear previous valid moves
             ClearHighlights();
@@ -411,6 +419,9 @@ namespace Checkers.Managers
             // or was a jump but with no additional jumps available)
             if (!_isInMultiJump)
             {
+                // Reset lift
+                ResetPieceVisual(_selectedPiece);
+
                 // Clear highlights
                 ClearHighlights();
 
@@ -516,6 +527,9 @@ namespace Checkers.Managers
             // Finalize if no further jumps
             if (!_isInMultiJump)
             {
+                // Reset lift
+                ResetPieceVisual(_selectedPiece);
+
                 ClearHighlights();
                 _selectedPiece = null;
                 CheckForGameEnd();
@@ -1431,6 +1445,28 @@ namespace Checkers.Managers
             _pieces[targetRow, targetCol] = displaced;
 
             return isCapturable;
+        }
+
+        // Selection visual helpers
+        private void SelectPieceVisual(CheckersPiece piece)
+        {
+            // lighter lift
+            piece.RenderTransform = new TranslateTransform(0, -4);
+            piece.Effect = new DropShadowEffect
+            {
+                BlurRadius = 20,
+                ShadowDepth = 6,
+                Color = Colors.Black,
+                Opacity = 0.7
+            };
+        }
+
+        private void ResetPieceVisual(CheckersPiece piece)
+        {
+            if (piece == null) return;
+            // clear any transforms/effects without risking frozen-state crashes
+            piece.ClearValue(UIElement.RenderTransformProperty);
+            piece.ClearValue(UIElement.EffectProperty);
         }
     }
 }
