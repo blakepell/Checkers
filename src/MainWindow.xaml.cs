@@ -48,6 +48,8 @@ namespace Checkers
 
         public SolidColorBrush DarkSquareHighlightColor { get; }
 
+        private bool _isConfettiRunning = false;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MainWindow"/> class.
         /// </summary>
@@ -305,6 +307,10 @@ namespace Checkers
         /// </summary>
         public void StartConfetti(int durationMs = 5000)
         {
+            // prevent re-entry if already animating
+            if (_isConfettiRunning) return;
+            _isConfettiRunning = true;
+
             // Find the confetti canvas in case it's not exposed as a field
             var canvas = FindName("ConfettiCanvas") as Canvas;
 
@@ -361,8 +367,8 @@ namespace Checkers
                 };
                 rect.BeginAnimation(Canvas.TopProperty, animY);
 
-                // Horizontal drift animation: widen range to ~60% of canvas width
-                double maxDrift = canvasWidth * 0.6;
+                // Horizontal drift animation: narrow range to ~30% of canvas width
+                double maxDrift = canvasWidth * 0.3;
                 var animX = new DoubleAnimation
                 {
                     From = startX,
@@ -412,6 +418,7 @@ namespace Checkers
                 timer.Stop();
                 canvas.Visibility = Visibility.Collapsed;
                 canvas.Children.Clear();
+                _isConfettiRunning = false;    // allow re-trigger
             };
             timer.Start();
         }
