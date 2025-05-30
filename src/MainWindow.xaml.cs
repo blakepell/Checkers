@@ -333,8 +333,18 @@ namespace Checkers
                     Width = rand.Next(5, 12),
                     Height = rand.Next(5, 12),
                     Fill = new SolidColorBrush(colors[rand.Next(colors.Length)]),
-                    RenderTransform = new RotateTransform(rand.Next(360))
+                    RenderTransformOrigin = new Point(0.5, 0.5)
                 };
+
+                // Replace single RotateTransform with rotate + scale + skew
+                var rotate = new RotateTransform(rand.Next(360));
+                var scale = new ScaleTransform(1, 1);
+                var skew = new SkewTransform(0, 0);
+                rect.RenderTransform = new TransformGroup
+                {
+                    Children = new TransformCollection { rotate, scale, skew }
+                };
+
                 double startX = rand.NextDouble() * canvasWidth;
                 Canvas.SetLeft(rect, startX);
                 Canvas.SetTop(rect, -20);
@@ -351,14 +361,47 @@ namespace Checkers
                 };
                 rect.BeginAnimation(Canvas.TopProperty, animY);
 
-                // Horizontal drift animation
+                // Horizontal drift animation: widen range to ~60% of canvas width
+                double maxDrift = canvasWidth * 0.6;
                 var animX = new DoubleAnimation
                 {
                     From = startX,
-                    To = startX + (rand.NextDouble() * 100 - 50),
+                    To = startX + (rand.NextDouble() * maxDrift - maxDrift / 2),
                     Duration = TimeSpan.FromMilliseconds(particleDuration)
                 };
                 rect.BeginAnimation(Canvas.LeftProperty, animX);
+
+                // Continuous spin animation for realistic rotation
+                var spinAnim = new DoubleAnimation
+                {
+                    From = 0,
+                    To = 360,
+                    Duration = TimeSpan.FromMilliseconds(rand.Next(minDur, maxDurPerParticle)),
+                    RepeatBehavior = RepeatBehavior.Forever
+                };
+                rotate.BeginAnimation(RotateTransform.AngleProperty, spinAnim);
+
+                // Flip (scale X) animation
+                var flipAnim = new DoubleAnimationUsingKeyFrames
+                {
+                    Duration = TimeSpan.FromMilliseconds(particleDuration),
+                    RepeatBehavior = RepeatBehavior.Forever
+                };
+                flipAnim.KeyFrames.Add(new EasingDoubleKeyFrame(1, KeyTime.FromPercent(0)));
+                flipAnim.KeyFrames.Add(new EasingDoubleKeyFrame(-1, KeyTime.FromPercent(0.5)));
+                flipAnim.KeyFrames.Add(new EasingDoubleKeyFrame(1, KeyTime.FromPercent(1)));
+                scale.BeginAnimation(ScaleTransform.ScaleXProperty, flipAnim);
+
+                // Flutter (skew) animation
+                var skewAnim = new DoubleAnimation
+                {
+                    From = -20,
+                    To = 20,
+                    Duration = TimeSpan.FromMilliseconds(rand.Next(particleDuration / 2, particleDuration)),
+                    AutoReverse = true,
+                    RepeatBehavior = RepeatBehavior.Forever
+                };
+                skew.BeginAnimation(SkewTransform.AngleXProperty, skewAnim);
             }
 
             // Stop and clear after all particles have fallen
